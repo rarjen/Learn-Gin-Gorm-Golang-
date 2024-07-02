@@ -41,6 +41,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
+	// Query
 	result, err := h.userService.RegisterUser(input)
 
 	if err != nil {
@@ -56,4 +57,38 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	response := helpers.APIResponseCreated("Success register!", formatter)
 
 	c.JSON(http.StatusCreated, response)
+}
+
+func (h *userHandler) Login(c *gin.Context) {
+	var input user.LoginInput
+
+	err := c.ShouldBindBodyWithJSON(&input)
+
+	if err != nil {
+		errors := helpers.FormatErrorValidation(err)
+
+		//gin.H{} adalah map untuk menampung key dan value
+		errorMessage := gin.H{"error": errors}
+
+		response := helpers.APIResponseUnprocessableEntity("Check your input!", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// Query
+	result, err := h.userService.Login(input)
+
+	if err != nil {
+		errorMessage := gin.H{"error": err.Error()}
+
+		response := helpers.APIResponseNotFound("Email/Password not match!", errorMessage)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	formatter := user.FormatUser(result, "tokentest")
+
+	response := helpers.APIResponseSuccess("Success login!", formatter)
+
+	c.JSON(http.StatusOK, response)
 }
