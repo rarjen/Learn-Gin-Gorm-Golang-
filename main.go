@@ -32,6 +32,7 @@ func main() {
 
 	// Endpoints
 	api.POST("/users", userHandler.RegisterUser)
+	api.POST("/sessions", userHandler.Login)
 
 	router.Run()
 
