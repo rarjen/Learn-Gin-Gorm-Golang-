@@ -92,3 +92,42 @@ func (h *userHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *userHandler) ChekEmailAvailablity(c *gin.Context) {
+	var input user.CheckEmailInput
+
+	err := c.ShouldBindBodyWithJSON(&input)
+
+	if err != nil {
+		errors := helpers.FormatErrorValidation(err)
+
+		//gin.H{} adalah map untuk menampung key dan value
+		errorMessage := gin.H{"error": errors}
+
+		response := helpers.APIResponseUnprocessableEntity("Email checking failed!", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	isEmailAvailable, err := h.userService.IsEmailAvailable(input)
+
+	if err != nil {
+
+		errorMessage := gin.H{"error": "Server error!"}
+
+		response := helpers.APIResponseUnprocessableEntity("Email checking failed!", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{
+		"is_available": isEmailAvailable,
+	}
+	metaMessage := "Email has been registered"
+	if isEmailAvailable {
+		metaMessage = "Email is available"
+	}
+
+	response := helpers.APIResponseSuccess(metaMessage, data)
+	c.JSON(http.StatusOK, response)
+}
