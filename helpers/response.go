@@ -41,6 +41,19 @@ func APIResponseUnprocessableEntity(message string, data interface{}) Response {
 	return customResponse
 }
 
+func APIResponseNotFound(message string, data interface{}) Response {
+	meta := Meta{
+		Message: message,
+		Code:    http.StatusNotFound,
+		Status:  "not found",
+	}
+	customResponse := Response{
+		Meta: meta,
+		Data: data,
+	}
+	return customResponse
+}
+
 func APIResponseCreated(message string, data interface{}) Response {
 	meta := Meta{
 		Message: message,
