@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bwa-golang/auth"
 	"bwa-golang/handler"
 	"bwa-golang/user"
 	"fmt"
@@ -23,8 +24,11 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
+	authService := auth.NewService()
 
-	userHandler := handler.NewUserHandler(userService)
+	fmt.Println(authService.GenerateToken(1001))
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 
@@ -34,6 +38,7 @@ func main() {
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.ChekEmailAvailablity)
+	api.POST("/avatars", userHandler.UploadAvatar)
 
 	router.Run()
 
