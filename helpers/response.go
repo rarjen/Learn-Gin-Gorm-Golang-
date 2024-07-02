@@ -67,7 +67,7 @@ func APIResponseCreated(message string, data interface{}) Response {
 	return customResponse
 }
 
-func ApiResponseBadRequest(message string) Response {
+func ApiResponseBadRequest(message string, data interface{}) Response {
 	meta := Meta{
 		Message: message,
 		Code:    http.StatusBadRequest,
@@ -75,7 +75,7 @@ func ApiResponseBadRequest(message string) Response {
 	}
 	customResponse := Response{
 		Meta: meta,
-		Data: nil,
+		Data: data,
 	}
 	return customResponse
 }
