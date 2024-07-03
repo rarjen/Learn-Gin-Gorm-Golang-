@@ -43,6 +43,20 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
+	userExist, err := h.userService.CheckUserExist(input.Email)
+
+	if err != nil {
+		response := helpers.ApiResponseBadRequest("Something went wrong!", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	if userExist.ID != 0 {
+		response := helpers.ApiResponseBadRequest("Email already exist!", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
 	// Query
 	result, err := h.userService.RegisterUser(input)
 
@@ -149,7 +163,9 @@ func (h *userHandler) ChekEmailAvailablity(c *gin.Context) {
 }
 
 func (h *userHandler) UploadAvatar(c *gin.Context) {
-	userId := 1
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	userId := currentUser.ID
 
 	file, err := c.FormFile("avatar")
 	if err != nil {
