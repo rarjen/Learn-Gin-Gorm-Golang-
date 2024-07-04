@@ -87,3 +87,62 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, response)
 }
+
+func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
+	var input campaign.GetCampaignDetailInput
+
+	err := c.ShouldBindUri(&input)
+	if err != nil {
+		response := helpers.APIResponseUnprocessableEntity("Failed to update campaign1", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	checkDataExist, err := h.service.GetCampaignById(input)
+	if err != nil {
+		response := helpers.APIResponseUnprocessableEntity("Failed to update campaign1", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	if checkDataExist.ID == 0 {
+		response := helpers.APIResponseNotFound("Not found", nil)
+		c.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	var inputData campaign.UpdateCampaignInput
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	inputData.User = currentUser
+
+	err = c.ShouldBindBodyWithJSON(&inputData)
+	if err != nil {
+		response := helpers.APIResponseUnprocessableEntity("Failed to update campaign2", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	_, err = h.service.UpdateCampaign(input, inputData)
+
+	if err != nil {
+
+		errorMessage := gin.H{"errors": err.Error()}
+		response := helpers.APIResponseUnprocessableEntity("Failed to update campaign3", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	afterUpdated, err := h.service.GetCampaignById(input)
+	if err != nil {
+		response := helpers.APIResponseUnprocessableEntity("Failed to update campaign4", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	response := helpers.APIResponseSuccess("Success to update campaign", campaign.FormatCampign(afterUpdated))
+
+	c.JSON(http.StatusOK, response)
+
+}
