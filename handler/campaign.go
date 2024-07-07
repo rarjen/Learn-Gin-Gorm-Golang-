@@ -4,6 +4,7 @@ import (
 	"bwa-golang/campaign"
 	"bwa-golang/helpers"
 	"bwa-golang/user"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -145,4 +146,54 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 
+}
+
+func (h *campaignHandler) UploadImage(c *gin.Context) {
+	var input campaign.CreateCampignImageInput
+
+	err := c.ShouldBind(&input)
+	if err != nil {
+
+		errors := helpers.FormatErrorValidation(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helpers.APIResponseUnprocessableEntity("Failed to upload campaign image", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	input.User = currentUser
+	userID := currentUser.ID
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helpers.APIResponseUnprocessableEntity("Failed to upload campaign image", data)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helpers.APIResponseUnprocessableEntity("Failed to upload campaign image", data)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	_, err = h.service.SaveCampaignImage(input, path)
+	if err != nil {
+
+		data := gin.H{"is_uploaded": false}
+		response := helpers.APIResponseUnprocessableEntity("Failed to upload campaign image", data)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := helpers.APIResponseSuccess("Success to upload campaign image", data)
+
+	c.JSON(http.StatusOK, response)
 }
