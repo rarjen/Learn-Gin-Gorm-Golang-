@@ -5,6 +5,7 @@ import (
 	"bwa-golang/campaign"
 	"bwa-golang/handler"
 	"bwa-golang/helpers"
+	"bwa-golang/payment"
 	"bwa-golang/transaction"
 	"bwa-golang/user"
 	"fmt"
@@ -35,7 +36,8 @@ func main() {
 	userService := user.NewService(userRepository)
 	campaignService := campaign.NewService(campaignRepository)
 	authService := auth.NewService()
-	transactionService := transaction.NewService(transactionRepository, campaignRepository)
+	paymentSerice := payment.NewService()
+	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentSerice)
 
 	userHandler := handler.NewUserHandler(userService, authService)
 	campaignHandler := handler.NewCampaignHandler(campaignService)
@@ -62,6 +64,7 @@ func main() {
 	// Endpoints Transaction
 	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
+	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction)
 
 	router.Run(":8080")
 
