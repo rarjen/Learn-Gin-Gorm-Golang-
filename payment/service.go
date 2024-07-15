@@ -21,7 +21,7 @@ func NewService() *service {
 	return &service{}
 }
 
-func (s *service) GetPaymentUrl(transaction Transaction, user user.User) (string, error) {
+func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string, error) {
 	//Initiate client for Midtrans CoreAPI
 	var clientVar = coreapi.Client{}
 	clientVar.New("YOUR-SERVER-KEY", midtrans.Sandbox)
